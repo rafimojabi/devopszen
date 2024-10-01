@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    name: kind-lab-vault
+    namespace: vault
+  project: default
+  sources:
+  
+  - repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    helm:
+      valueFiles: 
+      - $values/applications/vault/values.yaml
+    targetRevision: 0.28.1
+  - repoURL: https://github.com/rafimojabi/devopszen.git 
+    targetRevision: HEAD
+    ref: values
+  syncPolicy:
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: baseline
+        pod-security.kubernetes.io/enforce-version: latest
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
