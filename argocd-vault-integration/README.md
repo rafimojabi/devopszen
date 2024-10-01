@@ -69,4 +69,21 @@ kubens vault
 kubectl exec -it vault-0 sh
 vault operator init
 ```
-This will provide you with **Initial root Token** along with 5 unseal keys. Keep this information somewhen as they will be required later. 3 out of 5 Unseal keys should be used to unseal the vault using command `vault operator unseal <KEY>`.  
+This will provide you with **Initial root Token** along with 5 unseal keys. Keep this information somewhen as they will be required later. 3 out of 5 Unseal keys should be used to unseal the vault using command `vault operator unseal <KEY>`. Lets say following is the output
+```
+Unseal Key 1: oKDDHikSmx0XwX8V5zgy0CCH/Mle/gz7synSn0SJ+/tl
+Unseal Key 2: hXxYj575680eTSas1C0TQJOwxPKTCDBxB1xfvkySv97z
+Unseal Key 3: 8LpgJGgrvJuXWRw17S6XF0c2GywD4+cUtdQ2KdeoQQYZ
+Unseal Key 4: VHp14753wUwsjthkF9YJR7F+Ny5besCN0YdBVHuoI8UI
+Unseal Key 5: qg0Yg2pPD/QQq5tR8znqiLh0Axz1Ayxak/WTqiUr8fTX
+
+Initial Root Token: hvs.4IhgBifbmiFifYK7HC0PmJ0d
+
+```
+
+Then following command will make vault unsealed and accessible
+```
+vault operator unseal hXxYj575680eTSas1C0TQJOwxPKTCDBxB1xfvkySv97z
+vault operator unseal oKDDHikSmx0XwX8V5zgy0CCH/Mle/gz7synSn0SJ+/tl
+vault operator unseal 8LpgJGgrvJuXWRw17S6XF0c2GywD4+cUtdQ2KdeoQQYZ
+```
