@@ -69,4 +69,4 @@ kubens vault
 kubectl exec -it vault-0 sh
 vault operator init
 ```
-This will provide you with **Initial root Token** along with 5 unseal keys. Keep this information somewhen as they will be required later. 3 out of 5 Unseal keys should be used to unseal the vault using command `vault operator unseal <KEY>`. 
+This will provide you with **Initial root Token** along with 5 unseal keys. Keep this information somewhen as they will be required later. 3 out of 5 Unseal keys should be used to unseal the vault using command `vault operator unseal <KEY>`.  
