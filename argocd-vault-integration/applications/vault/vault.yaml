@@ -16,7 +16,7 @@ spec:
     chart: vault
     helm:
       valueFiles: 
-      - $values/applications/vault/values.yaml
+      - $values/argocd-vault-integration/applications/vault/values.yaml
     targetRevision: 0.28.1
   - repoURL: https://github.com/rafimojabi/devopszen.git 
     targetRevision: HEAD
