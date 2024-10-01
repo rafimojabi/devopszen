@@ -29,3 +29,61 @@ kind create cluster --name lab-vault --config ./Vault-cluster-config.yaml
 **NOTE: Do not forget to replace your interface IP address to config files**
 
 We shall have two kubernetes cluster up and running. One will be used only for hosting ArgoCD and the other for hosting Vault.
+
+Change the context to ArgoCD cluster and then install ArgoCD via Helm
+
+```
+kubectx kind-lab-argocd
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
+kubectl create ns argocd
+helm install argocd argo/argo-cd -n argocd
+```
+If not via ingress, You can always use `kubectl port-forward ...` to access to the UI. Consider following as an example:
+```
+kubectl port-forward service/argocd-server -n argocd --address 0.0.0.0 8080:443
+``` 
+NOTE: use `admin` as username. Password can be found via following command
+```
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+Following the steps, You will have fresh instance of ArgoCD up and running.
+
+### Adding Vault cluster to ArgoCD and deploying Vault
+Login to ArgoCD via `argocd cli` and add `kind-lab-vault` cluster. 
+```
+argocd login 127.0.0.1:8080
+argocd cluster add kind-lab-vault
+``` 
+Next we need add this git repository to ArgoCD attached repositories. We do that via argoCD UI. ***All applications that are supposed to be deployed by ArgoCD, including Vault, will be placed under applications directory of this repository***
+
+Having the repository added to the ArgoCD repositories, Create a ArgoCD application. The target should be this repository and path should be ***argocd-vault-integration/applications***. Set the type of the application to ***directory*** and keep ***recursive*** enabled.
+
+If all the configs set correctly, you will see the vault application being created and coming up.
+
+**This is important to note vault by default is coming up sealed**. Meaning the pod will not be ready until you make vault unsealed. Following is how to
+```
+kubectx kind-lab-vault
+kubens vault
+kubectl exec -it vault-0 sh
+vault operator init
+```
+This will provide you with **Initial root Token** along with 5 unseal keys. Keep this information somewhen as they will be required later. 3 out of 5 Unseal keys should be used to unseal the vault using command `vault operator unseal <KEY>`. Lets say following is the output
+```
+Unseal Key 1: oKDDHikSmx0XwX8V5zgy0CCH/Mle/gz7synSn0SJ+/tl
+Unseal Key 2: hXxYj575680eTSas1C0TQJOwxPKTCDBxB1xfvkySv97z
+Unseal Key 3: 8LpgJGgrvJuXWRw17S6XF0c2GywD4+cUtdQ2KdeoQQYZ
+Unseal Key 4: VHp14753wUwsjthkF9YJR7F+Ny5besCN0YdBVHuoI8UI
+Unseal Key 5: qg0Yg2pPD/QQq5tR8znqiLh0Axz1Ayxak/WTqiUr8fTX
+
+Initial Root Token: hvs.4IhgBifbmiFifYK7HC0PmJ0d
+
+```
+
+Then following command will make vault unsealed and accessible
+```
+vault operator unseal hXxYj575680eTSas1C0TQJOwxPKTCDBxB1xfvkySv97z
+vault operator unseal oKDDHikSmx0XwX8V5zgy0CCH/Mle/gz7synSn0SJ+/tl
+vault operator unseal 8LpgJGgrvJuXWRw17S6XF0c2GywD4+cUtdQ2KdeoQQYZ
+```
