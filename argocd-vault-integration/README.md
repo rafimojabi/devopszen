@@ -164,3 +164,50 @@ Save and you have the role created.
 ---
 
 ### Create secret object to be deployed by ArgoCD
+You can find a sample secret under the path `applications/sample-secret`. To grasp a better idea how this secret will invoke AVP plugin and the values stored in vault will be placed as values placeholder, note the followings:
+- The main part that causes AVP plugin being invoked is the following annotation
+```
+annotations:
+    avp.kubernetes.io/path: "development/data/sample-secret"
+```
+ - Full illustration of how ArgoCD plugins work and how is their lifecycle can be found in the video. In a nutshell, AVP plugin has the following part as its discovery
+ ```
+ apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: cmp-plugin
+      namespace: argocd
+    data:
+      avp.yaml: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: ConfigManagementPlugin
+        metadata:
+          name: argocd-vault-plugin
+          namespace: argocd
+        spec:
+          allowConcurrency: true
+          discover:
+            find:
+              command:
+                - sh
+                - "-c"
+                - "find . -name '*.yaml' ! -name '*values.yaml' | xargs -I {} grep \"<path\\|avp\\.kubernetes\\.io\" {} | grep ."
+          generate:
+          .
+          .
+          .
+ ```
+ - Discovery part of the plugin engages in every sync process of ArgoCD. If the status of the discovery command is success, The plugin will be invoked and generate command will be run. In our case, it is clear that discovery command is a simple `find` which check all the files recursively, and check if it has the pattern of `avp.kubernetes.io` or `path|`. These two are being used if any file that supposed to be rendered by values from Vault.
+ - The *generate* command will get list of those files, and run `argocd-vault-plugin generate --verbose-sensitive-output \"$file\";` per each.  `argocd-vault-plugin generate` will use the provided information for connecting to and being authenticated against Vault as environment variables. Followings are the env avp relies on
+ ```
+ ARGOCD_ENV_VAULT_ADDR
+ ARGOCD_ENV_AVP_AUTH_TYPE
+ ARGOCD_ENV_AVP_K8S_MOUNT_PATH
+ ARGOCD_ENV_AVP_K8S_ROLE
+ ARGOCD_ENV_AVP_TYPE
+ ``` 
+
+ If all the configs are set correctly, AVP will get the values stored in Vault under the  path `development/data/sample-secret`, check the key `lab-secret` and fetch the value of it, and render the secret before it is being deployed in Cluster.
+
+ ### conclusion
+ By integrating ArgoCD with Vault, We are able to store all secrets securely in Vault, and use them to deploy configmaps or secrets in kubernetes without pushing them to the git repository. 
