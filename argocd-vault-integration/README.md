@@ -152,3 +152,15 @@ We will add required configuration via Vault UI. Follow the menu path `Access > 
   ```
 Save the config and Kubernetes auth method will be created.
 We need to define a role for this authentication method as well. All entities authenticated with this method, will get this role. By attaching this role to the previously created `policy`, authenticated entities now can also access the secret we created under `development` path.
+
+Create role
+ - name: your desired name. We set it as argoCD
+ - Bound Service Account names: name of the service account being used to connect to vaul. in our case it is `argocd-repo-server`
+ - bound service account namespaces: the namespace for the service account. in our case it is `argocd`
+ - Generated Token's Policies: The policy that should be used. in our case `development`.
+  
+Save and you have the role created.
+
+---
+
+### Create secret object to be deployed by ArgoCD
