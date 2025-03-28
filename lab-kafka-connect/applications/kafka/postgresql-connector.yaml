@@ -11,6 +11,8 @@ spec:
   config:
     topic.prefix: "defaultdb"
     name: "postgresql-defaultdb"
+    # DO NOT FORGET TO UPDATE THIS ADDRESS BASED ON POSTGRESQL LOCATION. IF YOU FOLLOW THIS SAMPLE BRINGING UP POSTGRESQL VIA DOCKER COMPOSE
+    # YOU NEED TO UPDATE THE ADDRESS TO YOUR INTERFACE IP ADDRESS
     database.hostname: "192.168.178.22"
     database.port: "5432"
     database.user: "rafi"
